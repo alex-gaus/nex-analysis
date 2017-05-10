@@ -43,15 +43,17 @@ header="""<h1>NER-Analyser</h1>
 <h2>dpaID= %s</h2>
 <h2>tool= %s</h2>
 <div>&nbsp;</div><div>"""%(dpaid,tool)
-prefix="""<mark tool=%s><a href="%s">"""
+prefix="""<mark tool=%s><a href="%s" title="%s , %s">"""
 suffix="</a></mark>"
 text_list=[header]
 for x in range(0,len(entities)):
     part=text[y:int(entities[x]["start"])]
     entity=text[int(entities[x]["start"]):int(entities[x]["end"])]
     uri=entities[x]["uri"]
+    label=entities[x]["label"]
+    confidence=entities[x]["confidence"]
     text_list.append(part)
-    text_list.append(prefix%(tool,uri))
+    text_list.append(prefix%(tool,uri,label,confidence))
     text_list.append(entity)
     text_list.append(suffix)
     y=int(entities[x]["end"])
