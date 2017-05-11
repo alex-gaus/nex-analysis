@@ -5,5 +5,5 @@ def set_color(tool,tools):
         color = "lime"
     else:
         color = "lightpink"
+
     return color
-    
