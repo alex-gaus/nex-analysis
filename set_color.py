@@ -6,3 +6,4 @@ def set_color(tool,tools):
     else:
         color = "lightpink"
     return color
+    
