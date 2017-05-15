@@ -1,2 +1,6 @@
 data/
 *.html
+test/
+*.dp
+*.csv
+temp.py
