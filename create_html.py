@@ -30,10 +30,12 @@ with open(csv_list) as f:
         #dpa_file_path = glob.glob(path_output_dpa)[0]
         dpa_file = json.loads(open(dpa_file_path).read())
         text = dpa_file["text"]
-        dpaid = dpa_file["dpaId"]
-        dpaid = dpaid.replace(":","_")
+        urn = dpa_file["dpaId"]
+        dpaid = urn.replace(":","_")
         dpaid = dpaid.replace('/', 'v-')
-
+        urn = urn[:-2]
+        title = dpa_file["dpaTitle"]
+        pipette="https://pipette.dpa-newslab.com/pipette/#/doc/%s"%urn
 
         for tool in tools:
             os.chdir(path)
@@ -53,7 +55,10 @@ with open(csv_list) as f:
             length=len(entities)
             length_confidence=length
             word_count=len(text.split())
-            entities_word =length / word_count
+            try:
+                words_entity = word_count/length
+            except ZeroDivisionError:
+                words_entity = 0
             confidence_sum = 0
             
             for z in entities:
@@ -70,14 +75,19 @@ with open(csv_list) as f:
 
 
             header="""
+            <script src="https://hypothes.is/embed.js" async></script>
             <h2 style="text-align: center;">tool = %s </h2>
-            <h4 style="text-align: center;">Entities found = %s ---- Entities per word = %s</h4>
+            <h4 style="text-align: center;">Entities found = %s ---- Words per entity = %s</h4>
             <h4 style="text-align: center;">Average confidence = %s</h4>
             <div>&nbsp;</div><div>
-            """%(tool, length, entities_word, avg_confidence)
+            """%(tool, length, words_entity, avg_confidence)
 
             prefix="""
-            <mark tool=%s><a href="%s" 
+            <mark tool="%s"
+            confidence="%s"
+            label="%s"
+            uri="%s"
+            ><a href="%s" 
             title="%s , %s" 
             style="background-color: %s;">
             """
@@ -100,7 +110,7 @@ with open(csv_list) as f:
                 except KeyError:
                     confidence = "Error"
                 text_list.append(part)
-                text_list.append(prefix%(tool,uri,label,confidence,color))
+                text_list.append(prefix%(tool,confidence,label,uri,uri,label,confidence,color))
                 text_list.append(entity)
                 text_list.append(suffix)
                 y=int(entities[x]["end"])
@@ -118,13 +128,15 @@ with open(csv_list) as f:
 
             final_html="""
             <h1 style="text-align: center;">NER-Analyser</h1>
-            <h3 style="text-align: center;">dpaID = %s **** Words in text = %s</h3>
+            <h3 style="text-align: center;">%s </h3>
+            <h3 style="text-align: center;"<td style="padding:6px","text-align: center;"><a href="%s" target="_blank">%s</a></td>
+            **** Words in text = %s</h3>
             <table min-width="800">
             </tr>
             %s
             </tr>
             </table>
-            """%(dpaid,word_count, html_input)
+            """%(title,pipette, dpaid,word_count, html_input)
 
         html_file= open("data/compare/nex-analysis_%s.html"%dpaid,"w")
         html_file.write(final_html)
