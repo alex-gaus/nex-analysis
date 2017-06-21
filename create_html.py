@@ -111,8 +111,23 @@ with open(csv_list) as f:
                     confidence = "Error"
                 text_list.append(part)
                 text_list.append(prefix%(tool,confidence,label,uri,uri,label,confidence,color))
+                # text_list.append(prefix % locals())
+                # prefix=" %(tool)s"
                 text_list.append(entity)
                 text_list.append(suffix)
+                # ... in Python
+                # { "type" : "text" , "content" : "....."}
+                # { "type" : "entity" , "text": "...", "link" : ... }
+                # ... in Jinja
+                # {% for item in liste %}
+                #  {% if item.type == "text" %}{{ item.text }}
+                #  {% else %}
+                #  <mark data-tool="{{ item.tool }}" data-confidence="{{ item.confidence }}"
+                #  data-label="{{ item.label }}" ... ><a ...>{{ item.text }}</a></mark> 
+                #  {% endif %}
+                # {% endfor %}
+                # 
+                #  
                 y=int(entities[x]["end"])
             end=text[y:len(text)]
             text_list.append(end)

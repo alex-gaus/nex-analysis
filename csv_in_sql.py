@@ -73,35 +73,66 @@ for tool_file in file_list_tool:
                     entity_id=surface
                 if len(entity_dic["label"])>0:
                     label=entity_dic["label"]
+                    labelfromsurface=False
                 else:
-                    label="".join([entity_dic["surface"],"*"])
+                    label=entity_dic["surface"]
+                    labelfromsurface=True
                 value_entity=entity.find_one(entity_id=entity_id)
+                extra={
+                    "txtwerk":"None",
+                    "dandelion":"None",
+                    "ambiverse":"None"}
                 if value_entity == None:
                     entity.insert(dict(
                         uri=uri,
                         label=label,
-                        type="",
-                        entity_id=entity_id
+                        entity_id=entity_id,
+                        labelfromsurface=labelfromsurface,
+                        extra=str(extra)
+                        
                     ))
                     print("Entity ",entity_dic["surface"]," wurde angelegt")
                 else:
                     print("Entity ",entity_dic["surface"]," bereits angelegt")
+                    entity_id_id=list(database.query("select rowid from entity  where entity_id=:entity_id",entity_id=entity_id))[0]["rowid"]
+                    value_label=list(database.query("select labelfromsurface from entity where rowid=:entity_id_id",entity_id_id=entity_id_id))[0]["labelfromsurface"]
+                    if value_label == 1:
+                        entity.upsert(dict(
+                            label=label,
+                            labelfromsurface=labelfromsurface,
+                            entity_id=entity_id
+                            ),["entity_id"])
                 entity_id_id=list(database.query("select rowid from entity  where entity_id=:entity_id",entity_id=entity_id))[0]["rowid"]
-                try:
-                    confidence=float(entity_dic["confidence"])
-                except ValueError:
-                    confidence = None
-                except KeyError:
-                    confidence = None
-                found_entities.insert(dict(
-                    surface=surface,
-                    start=int(entity_dic["start"]),
-                    end=int(entity_dic["end"]),
-                    confidence=confidence,
-                    found='{:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.utcfromtimestamp(t)) ,
-                    dpa_id=dpa_id_id,
-                    tool_id=tool_id,
-                    entity_id=entity_id_id
-                ))
+                value_extra=found_entities.find_one(entity_id=entity_id_id,tool_id=tool_id)
+                value_extra=None                   
+                if value_extra == None:
+                    try:
+                        confidence=float(entity_dic["confidence"])
+                    except ValueError:
+                        confidence = None
+                    except KeyError:
+                        confidence = None
+                    found_entities.insert(dict(
+                        surface=surface,
+                        start=int(entity_dic["start"]),
+                        end=int(entity_dic["end"]),
+                        confidence=confidence,
+                        found='{:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.utcfromtimestamp(t)) ,
+                        dpa_id=dpa_id_id,
+                        tool_id=tool_id,
+                        entity_id=entity_id_id
+                    ))
+
+        """else:
+            extra={tool:"None"}
+            found_entities.insert(dict(surface="",
+                    label="",
+                    start=0,
+                    end=0,
+                    confidence=0,
+                    uri="q0",
+                    timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.utcfromtimestamp(t)),
+                    extra=str(extra)))
+"""
 print("DONE")
 os.chdir(path_original)
